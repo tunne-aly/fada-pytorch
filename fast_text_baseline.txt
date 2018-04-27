@@ -1,0 +1,90 @@
+For cell phones and electronics
+
+N	200
+P@1	0.705
+R@1	0.705
+Number of examples: 200
+
+Grade frequencies:
+5: 124 (0.62)
+4: 49 (0.245)
+3: 19 (0.095)
+2: 3 (0.015)
+1: 5 (0.025)
+
+For cell phones and video:
+
+N	200
+P@1	0.65
+R@1	0.65
+Number of examples: 200
+
+Grade frequencies:
+5: 102 (0.51)
+4: 45 (0.225)
+3: 21 (0.105)
+2: 12 (0.006)
+1: 20 (0.1)
+
+Training with encoder using fast text vectors:
+
+Epoch 0 Loss 1.4385336637496948 Accuracy 0.27
+Epoch 1 Loss 0.8853937387466431 Accuracy 0.24
+Epoch 2 Loss 0.45043274760246277 Accuracy 0.46
+Epoch 3 Loss 0.29687339067459106 Accuracy 0.48
+Epoch 4 Loss 0.11856948584318161 Accuracy 0.45
+Epoch 5 Loss 0.044551171362400055 Accuracy 0.58
+Epoch 6 Loss 0.011602355167269707 Accuracy 0.61
+Epoch 7 Loss 0.027361096814274788 Accuracy 0.48
+Epoch 8 Loss 0.012968560680747032 Accuracy 0.59
+Epoch 9 Loss 0.002823083195835352 Accuracy 0.53
+Epoch 10 Loss 0.0010026441887021065 Accuracy 0.58
+Epoch 11 Loss 0.001369199133478105 Accuracy 0.54
+Epoch 12 Loss 0.0009669146966189146 Accuracy 0.55
+Epoch 13 Loss 0.00022094800078775734 Accuracy 0.56
+Epoch 14 Loss 0.0001754501718096435 Accuracy 0.55
+Epoch 15 Loss 0.0001478764897910878 Accuracy 0.54
+Epoch 16 Loss 7.38991002435796e-05 Accuracy 0.54
+Epoch 17 Loss 8.818312926450744e-05 Accuracy 0.54
+Epoch 18 Loss 5.411297388491221e-05 Accuracy 0.55
+Epoch 19 Loss 4.388144225231372e-05 Accuracy 0.55
+
+
+Binary:
+3 not included
+N	200
+P@1	0.92
+R@1	0.92
+Number of examples: 200
+
+Trinary:
+N	200
+P@1	0.82
+R@1	0.82
+Number of examples: 200
+
+Electronics, cell phones and video games (Amazon):
+10% test set
+
+Trinary:
+Read 241M words
+Number of words:  1687282
+Number of labels: 3
+
+N	211419
+P@1	0.832
+R@1	0.832
+Number of examples: 211419
+
+Binary (no 3):
+Read 230M words
+Number of words:  1608890
+Number of labels: 2
+
+Results:
+N	19535
+P@1	0.952
+R@1	0.952
+Number of examples: 19535
+Most common: 0.90%
+

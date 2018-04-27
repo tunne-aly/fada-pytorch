@@ -12,35 +12,41 @@ def model_fn(encoder, classifier):
     return lambda x: classifier(encoder(x))
 
 ''' Pretrain the encoder and classifier as in (a) in figure 2. '''
-def pretrain(data, test_data_loader, epochs=5, batch_size=128, cuda=False):
-
-    X_s, y_s, _, _ = data
+def pretrain(source_data_loader, test_data_loader, no_classes, embeddings, epochs=20, batch_size=128, cuda=False):
 
     classifier = Classifier()
-    encoder = Encoder()
+    encoder = Encoder(embeddings)
 
     if cuda:
         classifier.cuda()
         encoder.cuda()
 
     ''' Jointly optimize both encoder and classifier '''
-    optimizer = optim.Adam(list(encoder.parameters()) + list(classifier.parameters()))
-    loss_fn = nn.CrossEntropyLoss()
+    encoder_params = filter(lambda p: p.requires_grad, encoder.parameters())
+    optimizer = optim.Adam(list(encoder_params) + list(classifier.parameters()))
 
+    # Use weights to normalize imbalanced in data
+    c = [1]*len(no_classes)
+    weights = torch.FloatTensor(len(no_classes))
+    for i, (a, b) in enumerate(zip(c, no_classes)):
+        weights[i] = 0 if b == 0 else a/b
+
+    loss_fn = nn.CrossEntropyLoss(weight=Variable(weights))
+
+    print('Training encoder and classifier')
     for e in range(epochs):
 
-        for _ in range(len(X_s) // batch_size):
-            inds = torch.randperm(len(X_s))[:batch_size]
-
-            x, y = Variable(X_s[inds]), Variable(y_s[inds])
+        # pretrain with whole source data -- use groups with DCD
+        for sample in source_data_loader:
+            x, y = Variable(sample[0]), Variable(sample[1])
             optimizer.zero_grad()
 
             if cuda:
                 x, y = x.cuda(), y.cuda()
 
-            y_pred = model_fn(encoder, classifier)(x)
+            output = model_fn(encoder, classifier)(x)
 
-            loss = loss_fn(y_pred, y)
+            loss = loss_fn(output, y)
 
             loss.backward()
 
@@ -53,7 +59,7 @@ def pretrain(data, test_data_loader, epochs=5, batch_size=128, cuda=False):
 ''' Train the discriminator while the encoder is frozen '''
 def train_discriminator(encoder, groups, n_target_samples=2, cuda=False, epochs=20):
 
-    discriminator = DCD(D_in=128) # Takes in concatenated hidden representations
+    discriminator = DCD(D_in=200) # Takes in concatenated hidden representations
     loss_fn = nn.CrossEntropyLoss()
 
     # Only train DCD
@@ -65,7 +71,7 @@ def train_discriminator(encoder, groups, n_target_samples=2, cuda=False, epochs=
     if cuda:
         discriminator.cuda()
 
-    print("Training DCD")
+    print("Training DCD with classifier and encoder frozen")
     for e in range(epochs):
 
         for _ in range(n_iters):
@@ -84,13 +90,18 @@ def train_discriminator(encoder, groups, n_target_samples=2, cuda=False, epochs=
 
             # Concatenate encoded representations
             x_cat = torch.cat([encoder(x1.unsqueeze(0)), encoder(x2.unsqueeze(0))], 1)
-            y_pred = discriminator(x_cat)
+            output = discriminator(x_cat)
+
+            _, y_pred = torch.max(output.data, 1)
+
+            print('pred: {} '.format(y_pred))
 
             # Label is the group
             y = Variable(torch.LongTensor([group]))
+            print('true: {}'.format(y))
             if cuda:
                 y = y.cuda()
-            loss = -loss_fn(y_pred, y)
+            loss = -loss_fn(output, y)
 
             loss.backward()
 
@@ -105,10 +116,7 @@ def fada_loss(y_pred_g2, g1_true, y_pred_g4, g3_true, gamma=0.2):
     return -gamma * torch.mean(g1_true * torch.log(y_pred_g2) + g3_true * torch.log(y_pred_g4))
 
 ''' Step three of the algorithm, train everything except the DCD '''
-def train(encoder, discriminator, classifier, data, groups, n_target_samples=2, cuda=False, epochs=20, batch_size=256, plot_accuracy=False):
-
-    # For evaluation only
-    test_data_loader = svhn_dataloader(train=False, cuda=cuda)
+def train(encoder, discriminator, classifier, data, test_data_loader, groups, n_target_samples=2, cuda=False, epochs=20, batch_size=256, plot_accuracy=False):
 
     X_s, Y_s, X_t, Y_t = data
 
@@ -123,6 +131,7 @@ def train(encoder, discriminator, classifier, data, groups, n_target_samples=2, 
 
     if plot_accuracy:
         accuracies = []
+    print('Training encoder and classifier again and freeze DCD')
     for e in range(epochs):
 
         # Shuffle data at each epoch
@@ -185,7 +194,7 @@ def train(encoder, discriminator, classifier, data, groups, n_target_samples=2, 
 
     if plot_accuracy:
         plt.plot(range(len(accuracies)), accuracies)
-        plt.title("SVHN test accuracy")
+        plt.title("Finnish test accuracy")
         plt.xlabel("Epoch")
         plt.ylabel("Accuracy")
         plt.show()

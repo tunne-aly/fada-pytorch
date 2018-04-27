@@ -1,0 +1,18 @@
+1. Korita --> Katso uusi baseline
+2. Käytä embedding niin, että annat fast text -vektorit parametrina: https://discuss.pytorch.org/t/can-we-use-pre-trained-word-embeddings-for-weight-initialization-in-nn-embedding/1222
+  a. Aluksi ei opeta --> poista eka layer parametreista
+  b. Anna sen jälkeen opettaa
+3. Katso test accuracy encoderille
+4. Tasoita amazon-data
+5. Testaa samanaiheisilla dataseteillä
+
+
+25.4.2018
+1. toteuta __getitem__ niin, että lauseelle voi hakea sanavektorit, sekä embeddingit
+  1.1. huomioi tätä ryhmien muodostamisessa
+  26.4.2018
+  1.2. Siirrä verkkisdata yhteen tiedostoon
+  1.3. Aja sille datalle fasttext-skripta (luo lause- ja sanatiedostot ensin)
+  1.5. Muokkaa FinnishDataset asianmukaiseksi
+  1.6. Testaa, että datasettien samplays toimii
+2. lisää neuroverkkoon konvoluutiota
